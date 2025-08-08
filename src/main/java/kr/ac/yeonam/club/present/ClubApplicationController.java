@@ -1,6 +1,7 @@
 package kr.ac.yeonam.club.present;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -47,5 +48,12 @@ public class ClubApplicationController {
         ClubApplicationDto application = clubApplicationService.findById(id);
         return application.getQuestionAnswers();
     }
+
+@PatchMapping("/{id}")
+public ClubApplicationDto partialUpdate(
+        @PathVariable Long id,
+        @RequestBody Map<String, Object> updates) {
+    return clubApplicationService.partialUpdate(id, updates);
+}
 
 }
