@@ -41,4 +41,11 @@ public class ClubApplicationController {
     public void cancelApplication(@PathVariable Long id) {
         clubApplicationService.cancel(id);
     }
+ // 질문과 답변만 반환하는 GET 엔드포인트 추가
+    @GetMapping("/{id}/questions")
+    public List<QuestionAnswerDto> getQuestionAnswers(@PathVariable Long id) {
+        ClubApplicationDto application = clubApplicationService.findById(id);
+        return application.getQuestionAnswers();
+    }
+
 }

@@ -1,36 +1,46 @@
 package kr.ac.yeonam.club.domain;
 
-// 동아리 신청 내역(엔티티)을 표현하는 클래스
+// JPA import 삭제!
+import java.time.LocalDate;
+import java.util.List;
+
 public class ClubApplication {
-    private Long id;                // 신청 고유번호
-    private String applicantName;   // 신청자 이름
-    private String clubName;        // 지원한 동아리명
-    private ClubStatus status;      // 신청 상태(심사중, 합격, 불합격 등)
-    private String appliedDate;     // 신청일자 (String 또는 LocalDate)
+
+    // JPA 어노테이션 삭제!
+    private Long id;
+
+    private String applicantName;
+    private String clubName;
+    private LocalDate appliedDate;
+
+    // 어노테이션 삭제, 필드만 남김
+    private List<QuestionAnswer> questionAnswers;
+
+    // Enum 어노테이션 삭제
+    private ClubStatus status;
 
     public ClubApplication() {}
 
-    public ClubApplication(Long id, String applicantName, String clubName, ClubStatus status, String appliedDate) {
+    // 기타 생성자, getter, setter...
+    // (DTO에서 변환시 모든 필드 포함)
+
+    public void setId(Long id) {
         this.id = id;
-        this.applicantName = applicantName;
-        this.clubName = clubName;
-        this.status = status;
-        this.appliedDate = appliedDate;
     }
 
-    // Getter/Setter
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
     public String getApplicantName() { return applicantName; }
     public void setApplicantName(String applicantName) { this.applicantName = applicantName; }
 
     public String getClubName() { return clubName; }
     public void setClubName(String clubName) { this.clubName = clubName; }
 
+    public LocalDate getAppliedDate() { return appliedDate; }
+    public void setAppliedDate(LocalDate appliedDate) { this.appliedDate = appliedDate; }
+
+    public List<QuestionAnswer> getQuestionAnswers() { return questionAnswers; }
+    public void setQuestionAnswers(List<QuestionAnswer> questionAnswers) { this.questionAnswers = questionAnswers; }
+
     public ClubStatus getStatus() { return status; }
     public void setStatus(ClubStatus status) { this.status = status; }
-
-    public String getAppliedDate() { return appliedDate; }
-    public void setAppliedDate(String appliedDate) { this.appliedDate = appliedDate; }
 }

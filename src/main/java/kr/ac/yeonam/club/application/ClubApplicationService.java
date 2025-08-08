@@ -4,14 +4,16 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import kr.ac.yeonam.club.domain.ClubApplication;
+import kr.ac.yeonam.club.domain.QuestionAnswer;
 import kr.ac.yeonam.club.domain.ClubStatus;
 import kr.ac.yeonam.club.infrastructure.ClubApplicationRepository;
 import kr.ac.yeonam.club.present.ClubApplicationDto;
+import kr.ac.yeonam.club.present.QuestionAnswerDto;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service // 이 클래스가 스프링의 Service Bean으로 등록됨
+@Service
 public class ClubApplicationService {
 
     private final ClubApplicationRepository clubApplicationRepository;
@@ -30,27 +32,62 @@ public class ClubApplicationService {
     public ClubApplicationDto apply(ClubApplicationDto clubApplicationDto) {
         // DTO → Entity 변환
         ClubApplication clubApplication = modelMapper.map(clubApplicationDto, ClubApplication.class);
-        // 상태는 Enum 값으로 반드시 세팅
+
+        // questionAnswers 수동 매핑 (ModelMapper가 자동 매핑 못할 때)
+        if (clubApplicationDto.getQuestionAnswers() != null) {
+            List<QuestionAnswer> answers = clubApplicationDto.getQuestionAnswers().stream()
+                .map(dto -> new QuestionAnswer(dto.getQuestion(), dto.getAnswer()))
+                .collect(Collectors.toList());
+            clubApplication.setQuestionAnswers(answers);
+        }
+
+        // 상태 세팅
         clubApplication.setStatus(ClubStatus.PENDING);
+
         // 저장
         ClubApplication saved = clubApplicationRepository.save(clubApplication);
-        // Entity → DTO 변환 후 반환
-        return modelMapper.map(saved, ClubApplicationDto.class);
+
+        // Entity → DTO 변환 (questionAnswers 포함)
+        ClubApplicationDto savedDto = modelMapper.map(saved, ClubApplicationDto.class);
+        if (saved.getQuestionAnswers() != null) {
+            List<QuestionAnswerDto> answerDtos = saved.getQuestionAnswers().stream()
+                .map(q -> new QuestionAnswerDto(q.getQuestion(), q.getAnswer()))
+                .collect(Collectors.toList());
+            savedDto.setQuestionAnswers(answerDtos);
+        }
+
+        return savedDto;
     }
 
     // 신청 목록 전체 조회 (Read)
     public List<ClubApplicationDto> findAll() {
         List<ClubApplication> entities = clubApplicationRepository.findAll();
         return entities.stream()
-                .map(entity -> modelMapper.map(entity, ClubApplicationDto.class))
-                .collect(Collectors.toList());
+            .map(entity -> {
+                ClubApplicationDto dto = modelMapper.map(entity, ClubApplicationDto.class);
+                if (entity.getQuestionAnswers() != null) {
+                    List<QuestionAnswerDto> answerDtos = entity.getQuestionAnswers().stream()
+                        .map(q -> new QuestionAnswerDto(q.getQuestion(), q.getAnswer()))
+                        .collect(Collectors.toList());
+                    dto.setQuestionAnswers(answerDtos);
+                }
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
 
     // 신청 상세 조회 (Read)
     public ClubApplicationDto findById(Long id) {
         ClubApplication entity = clubApplicationRepository.findById(id);
         if (entity == null) return null; // or throw exception
-        return modelMapper.map(entity, ClubApplicationDto.class);
+        ClubApplicationDto dto = modelMapper.map(entity, ClubApplicationDto.class);
+        if (entity.getQuestionAnswers() != null) {
+            List<QuestionAnswerDto> answerDtos = entity.getQuestionAnswers().stream()
+                .map(q -> new QuestionAnswerDto(q.getQuestion(), q.getAnswer()))
+                .collect(Collectors.toList());
+            dto.setQuestionAnswers(answerDtos);
+        }
+        return dto;
     }
 
     // 신청 취소 (Delete)
@@ -58,10 +95,28 @@ public class ClubApplicationService {
         clubApplicationRepository.deleteById(id);
     }
 
-    // 신청 정보 수정 (Update, 선택)
+    // 신청 정보 수정 (Update)
     public ClubApplicationDto update(ClubApplicationDto clubApplicationDto) {
         ClubApplication clubApplication = modelMapper.map(clubApplicationDto, ClubApplication.class);
+
+        // questionAnswers 수동 매핑
+        if (clubApplicationDto.getQuestionAnswers() != null) {
+            List<QuestionAnswer> answers = clubApplicationDto.getQuestionAnswers().stream()
+                .map(dto -> new QuestionAnswer(dto.getQuestion(), dto.getAnswer()))
+                .collect(Collectors.toList());
+            clubApplication.setQuestionAnswers(answers);
+        }
+
         ClubApplication updated = clubApplicationRepository.update(clubApplication);
-        return modelMapper.map(updated, ClubApplicationDto.class);
+
+        ClubApplicationDto updatedDto = modelMapper.map(updated, ClubApplicationDto.class);
+        if (updated.getQuestionAnswers() != null) {
+            List<QuestionAnswerDto> answerDtos = updated.getQuestionAnswers().stream()
+                .map(q -> new QuestionAnswerDto(q.getQuestion(), q.getAnswer()))
+                .collect(Collectors.toList());
+            updatedDto.setQuestionAnswers(answerDtos);
+        }
+
+        return updatedDto;
     }
 }
